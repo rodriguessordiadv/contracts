@@ -1,35 +1,55 @@
-# contracts — Padrão de Contratos CNTR
+# Skills Sávio Radé Sordi — Bundle Completo
 
-Repositório dos skills de geração de **contratos** (cabeçalho/rodapé + numeração
-padrão **CNTR**).
+Coleção de skills personalizadas para os fluxos Rodrigues & Sordi Advogados,
+RadéC Contabilidade, BHS Empreendimentos e iCT.
 
-## Skills
+## Conteúdo (14 skills)
 
-| Skill | Uso |
-| --- | --- |
-| [`rs-advogados/`](./rs-advogados/) | Contratos jurídicos — Rodrigues & Sordi |
-| [`radec-contabilidade/`](./radec-contabilidade/) | Propostas/contratos contábeis — RadéC (identidade verde petróleo #2C5F5F / azul #1F4E79) |
+| Skill | Finalidade |
+|---|---|
+| `rs-advogados` | Peças jurídicas .docx no padrão R&S (Book Antiqua, ABNT) |
+| `rs-cobrancas` | Fechamento de horas e cobranças do escritório |
+| `radec-contabilidade` | Documentos contábeis/tributários RadéC |
+| `irpf` | Condução de Declaração de Ajuste Anual no PGD |
+| `irpf-fillup` | Widget interativo de preenchimento do PGD |
+| `procuracao-ecac` | Procuração digital no e-CAC |
+| `esocial-cadastro` | Cadastro de empregado novo no eSocial |
+| `certificados-radec` | Operação de certificados digitais RadéC |
+| `nibo` | Operação do Nibo Contador (tarefas e atendimento) |
+| `previdenciario-bruno-rs` | Laudos e cartas previdenciárias (parceria Bruno) |
+| `prime` | Framework de análise estruturada (Purpose/Research/Interview/Mechanics/Examples) |
+| `onenote` | Página de resumo executivo para OneNote |
+| `recap` | Arquivo .md de transição de contexto entre chats |
+| `sotaque-savio` | Voz e estilo de escrita do Sávio |
 
-Cada skill tem:
+## Como instalar
 
-- `SKILL.md` — metadados + regra de numeração CNTR (pergunta obrigatória) + checklist;
-- `formatting-spec.md` — código `docx` do número no corpo, cabeçalho, rodapé e
-  ligação na seção do `Document`.
+### Opção A — script automático
+Em uma máquina/ambiente com diretório de skills do usuário:
+```bash
+bash install.sh /caminho/destino/skills
+```
+Se nenhum caminho for informado, usa `/mnt/skills/user` por padrão.
 
-## Escopo crítico
+### Opção B — manual
+Descompacte o bundle e copie a pasta `skills/` (ou skills individuais)
+para o diretório de skills do seu ambiente Claude.
 
-O padrão CNTR (layout **sem** cabeçalho institucional + numeração CNTR) vale
-**somente para CONTRATOS**. Petições, contestações, agravos e demais **peças
-forenses** mantêm o cabeçalho institucional **RODRIGUES & SORDI** — a
-identificação do advogado é exigência forense. **Não aplicar** o layout
-sem-cabeçalho a peças judiciais.
+## Padrão de Contratos (CNTR)
 
-## Padrão CNTR em resumo
+Os skills `rs-advogados` e `radec-contabilidade` incluem o padrão **CNTR** de
+numeração e layout de contratos:
 
-- Número no formato `CNTRNNNNNN` (prefixo CNTR + 6 dígitos), ex.: `CNTR000262`.
-- **Antes de gerar**, perguntar sempre: (1) o número do contrato e (2) em qual
-  lista/projeto registrá-lo. Nunca presumir o próximo número.
-- Página 1 **sem** cabeçalho; página 2+ com `Título | CNTRNNNNNN` no topo.
-- Sub-item CNTR à direita, itálico, abaixo do título.
-- Rodapé em todas as páginas: CNTR à esquerda, `Página X de Y` à direita, sem
-  dados institucionais.
+- Número `CNTRNNNNNN` (ex.: `CNTR000262`); antes de gerar, **perguntar sempre** o
+  número e em qual lista registrá-lo (nunca presumir o próximo).
+- Contrato: página 1 sem cabeçalho; pág. 2+ com `Título | CNTRNNNNNN`; rodapé com
+  número à esquerda e `Página X de Y` à direita, **sem** dados institucionais.
+- **Escopo crítico:** o layout sem-cabeçalho vale **só para contratos**. Peças
+  forenses (petição, contestação, agravo etc.) mantêm o cabeçalho institucional
+  Rodrigues & Sordi.
+
+Detalhes em cada `SKILL.md` (seção "Numeração e Layout de Contratos") e no
+respectivo `references/formatting-spec.md` (seção "Contratos — Layout CNTR").
+
+## Versão
+Gerado em: 2026-06-15
