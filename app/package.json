@@ -1,0 +1,16 @@
+{
+  "name": "rs-horas",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Software de honorários, banco de horas e e-mail-propostas do escritório Rodrigues & Sordi Advogados",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.4"
+  }
+}
