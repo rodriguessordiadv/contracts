@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Propostas de Acordo — R&S Advogados</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 920px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+        .header h1 { color: #333; font-size: 26px; margin-bottom: 8px; }
+        .header p { color: #666; font-size: 14px; }
+
+        .form-section { margin-bottom: 26px; }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-left: 4px solid #667eea;
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 14px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+        .form-group { display: flex; flex-direction: column; }
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="text"], input[type="email"], input[type="date"],
+        input[type="number"], input[type="password"], textarea, select {
+            padding: 11px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea { resize: vertical; min-height: 80px; }
+
+        .parcela-bloco {
+            border: 1px solid #e3e3f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: #fafaff;
+            position: relative;
+        }
+        .parcela-bloco .remover {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: #f5576c;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 26px; height: 26px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .parcela-bloco .remover:hover { background: #e0344b; }
+
+        .btn-add-parcela {
+            background: #eef0ff;
+            color: #667eea;
+            border: 1px dashed #667eea;
+            border-radius: 6px;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .btn-add-parcela:hover { background: #e3e6ff; }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 34px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button.acao {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .btn-ia { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; }
+        .btn-ia:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(17,153,142,0.3); }
+        .btn-pdf { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+        .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
+        .btn-word { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; }
+        .btn-word:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245,87,108,0.3); }
+        .btn-clear { background: #e0e0e0; color: #333; }
+        .btn-clear:hover { background: #d0d0d0; }
+
+        .alert { padding: 13px; border-radius: 6px; margin-bottom: 18px; font-size: 13px; }
+        .alert-info { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1565c0; }
+
+        .resumo {
+            margin-top: 8px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f4f6ff;
+            border: 1px solid #dfe3ff;
+        }
+        .resumo .linha { display: flex; justify-content: space-between; padding: 3px 0; }
+        .resumo .total { font-weight: 700; border-top: 1px solid #ccc; margin-top: 6px; padding-top: 8px; }
+        .resumo .ok { color: #1b873f; font-weight: 700; }
+        .resumo .erro { color: #e0344b; font-weight: 700; }
+
+        /* ---- Modal IA ---- */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.aberto { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 560px;
+            width: 100%;
+            padding: 28px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 { font-size: 20px; color: #11998e; margin-bottom: 6px; }
+        .modal .sub { font-size: 13px; color: #666; margin-bottom: 18px; }
+        .modal label { margin-top: 12px; }
+
+        .dropzone {
+            border: 2px dashed #11998e;
+            border-radius: 8px;
+            padding: 28px;
+            text-align: center;
+            color: #11998e;
+            cursor: pointer;
+            background: #f3fff9;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .dropzone.hover { background: #e1fff0; }
+        .lista-arquivos { font-size: 13px; color: #444; margin: 6px 0; }
+        .lista-arquivos div { padding: 3px 0; }
+
+        .modal-botoes { display: flex; gap: 10px; margin-top: 18px; }
+        .modal-botoes button { flex: 1; padding: 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
+        .modal-cancelar { background: #e0e0e0; color: #333; }
+        .modal-analisar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; }
+        .modal-analisar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .status-ia { font-size: 13px; margin-top: 12px; padding: 10px; border-radius: 6px; display: none; }
+        .status-ia.carregando { display: block; background: #fff8e1; color: #8a6d00; }
+        .status-ia.erro { display: block; background: #ffebee; color: #c62828; }
+        .status-ia.sucesso { display: block; background: #e8f5e9; color: #2e7d32; }
+
+        .nota-seguranca { font-size: 11px; color: #999; margin-top: 14px; line-height: 1.5; }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .form-row, .form-row.three { grid-template-columns: 1fr; }
+            .header h1 { font-size: 20px; }
+            .button-group { flex-direction: column; }
+            button.acao { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Gerador de Propostas de Acordo</h1>
+            <p>Preencha (ou deixe a IA preencher) e gere PDF ou Word automaticamente</p>
+        </div>
+
+        <div class="alert alert-info">
+            ℹ️ Tudo é salvo automaticamente no seu navegador enquanto você preenche.
+            Use <strong>✨ Preencher com IA</strong> para extrair os dados de documentos anexados.
+        </div>
+
+        <form id="acordoForm">
+            <!-- PARTES -->
+            <div class="form-section">
+                <div class="section-title">⚖️ Partes e Processo</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="credor">Credor (escritório/cliente)</label>
+                        <input type="text" id="credor" placeholder="Rodrigues &amp; Sordi Advogados" value="Rodrigues & Sordi Advogados">
+                    </div>
+                    <div class="form-group">
+                        <label for="devedor">Devedor</label>
+                        <input type="text" id="devedor" placeholder="Nome do cliente devedor">
+                    </div>
+                </div>
+                <div class="form-row three">
+                    <div class="form-group">
+                        <label for="docDevedor">CPF/CNPJ do Devedor</label>
+                        <input type="text" id="docDevedor" placeholder="000.000.000-00">
+                    </div>
+                    <div class="form-group">
+                        <label for="processo">Nº do Processo</label>
+                        <input type="text" id="processo" placeholder="0000000-00.0000.0.00.0000">
+                    </div>
+                    <div class="form-group">
+                        <label for="comarca">Vara / Comarca</label>
+                        <input type="text" id="comarca" placeholder="1ª Vara Cível — Comarca de ...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- DADOS DO ACORDO -->
+            <div class="form-section">
+                <div class="section-title">📑 Dados do Acordo</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dataAudiencia">Data da Audiência de Mediação</label>
+                        <input type="date" id="dataAudiencia" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="valorTotal">Valor Total do Acordo (R$)</label>
+                        <input type="number" id="valorTotal" placeholder="158000.00" step="0.01" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENTRADA -->
+            <div class="form-section">
+                <div class="section-title">💰 Entrada</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dataEntrada">Data da Entrada</label>
+                        <input type="date" id="dataEntrada">
+                    </div>
+                    <div class="form-group">
+                        <label for="valorEntrada">Valor da Entrada (R$)</label>
+                        <input type="number" id="valorEntrada" placeholder="18000.00" step="0.01">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PARCELAS DINÂMICAS -->
+            <div class="form-section">
+                <div class="section-title">📅 Parcelas</div>
+                <div id="parcelasContainer"></div>
+                <button type="button" class="btn-add-parcela" onclick="adicionarBlocoParcela()">➕ Adicionar bloco de parcelas</button>
+            </div>
+
+            <!-- CONFERÊNCIA -->
+            <div class="form-section">
+                <div class="section-title">🧮 Conferência de Valores</div>
+                <div class="resumo" id="resumo"></div>
+            </div>
+
+            <!-- CONDIÇÕES -->
+            <div class="form-section">
+                <div class="section-title">📝 Condições</div>
+                <div class="form-row full">
+                    <div class="form-group">
+                        <textarea id="condicoes" placeholder="Homologação do acordo em audiência&#10;Suspensão dos atos de expropriação durante a vigência do acordo&#10;Retomada automática em caso de inadimplemento"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OBSERVAÇÕES -->
+            <div class="form-section">
+                <div class="section-title">🗒️ Observações Adicionais</div>
+                <div class="form-row full">
+                    <div class="form-group">
+                        <textarea id="observacoes" placeholder="Qualquer informação adicional"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="button-group">
+                <button type="button" class="acao btn-ia" onclick="abrirModalIA()">✨ Preencher com IA</button>
+                <button type="button" class="acao btn-pdf" onclick="gerarPDF()">📄 Baixar PDF</button>
+                <button type="button" class="acao btn-word" onclick="gerarWord()">📘 Baixar Word</button>
+                <button type="button" class="acao btn-clear" onclick="limparFormulario()">🔄 Limpar Tudo</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- MODAL IA -->
+    <div class="modal-overlay" id="modalIA">
+        <div class="modal">
+            <h2>✨ Preencher com IA</h2>
+            <p class="sub">Anexe os documentos (planilha de débito, e-mail, contrato, print, PDF). O Claude lê e preenche o formulário.</p>
+
+            <label for="apiKey">Chave da API Anthropic</label>
+            <input type="password" id="apiKey" placeholder="sk-ant-...">
+
+            <div class="dropzone" id="dropzone">
+                📎 Arraste arquivos aqui ou clique para selecionar<br>
+                <small>PDF, imagens (JPG/PNG) ou texto</small>
+                <input type="file" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.md,.csv" style="display:none">
+            </div>
+            <div class="lista-arquivos" id="listaArquivos"></div>
+
+            <div class="status-ia" id="statusIA"></div>
+
+            <div class="modal-botoes">
+                <button class="modal-cancelar" onclick="fecharModalIA()">Cancelar</button>
+                <button class="modal-analisar" id="btnAnalisar" onclick="analisarComIA()">Analisar e preencher</button>
+            </div>
+
+            <p class="nota-seguranca">
+                🔒 Sua chave é salva apenas neste navegador (localStorage) e enviada direto para a API da Anthropic.
+                Não a embuta no código se for publicar a página em local de acesso público —
+                veja o esboço <code>PROPOSTA-IA.md</code> para a opção com servidor intermediário.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const MODEL = "claude-opus-4-8";
+        let arquivosSelecionados = [];
+
+        // ---------- Parcelas dinâmicas ----------
+        function adicionarBlocoParcela(dados = {}) {
+            const container = document.getElementById('parcelasContainer');
+            const div = document.createElement('div');
+            div.className = 'parcela-bloco';
+            div.innerHTML = `
+                <button type="button" class="remover" title="Remover" onclick="this.parentElement.remove(); atualizarResumo(); salvar();">×</button>
+                <div class="form-row three">
+                    <div class="form-group">
+                        <label>Ano / Período</label>
+                        <input type="text" class="p-ano" placeholder="2026" value="${dados.ano || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Qtde de Parcelas</label>
+                        <input type="number" class="p-qtde" placeholder="6" value="${dados.quantidade ?? ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor da Parcela (R$)</label>
+                        <input type="number" step="0.01" class="p-valor" placeholder="5000.00" value="${dados.valor ?? ''}">
+                    </div>
+                </div>
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label>Meses (ex.: julho a dezembro)</label>
+                        <input type="text" class="p-meses" placeholder="julho a dezembro" value="${dados.meses || ''}">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            div.querySelectorAll('input').forEach(inp => {
+                inp.addEventListener('input', () => { atualizarResumo(); salvar(); });
+            });
+            atualizarResumo();
+        }
+
+        function lerParcelas() {
+            return [...document.querySelectorAll('.parcela-bloco')].map(b => ({
+                ano: b.querySelector('.p-ano').value.trim(),
+                quantidade: parseInt(b.querySelector('.p-qtde').value) || 0,
+                valor: parseFloat(b.querySelector('.p-valor').value) || 0,
+                meses: b.querySelector('.p-meses').value.trim()
+            }));
+        }
+
+        // ---------- Dados ----------
+        const CAMPOS = ['credor','devedor','docDevedor','processo','comarca',
+                        'dataAudiencia','valorTotal','dataEntrada','valorEntrada',
+                        'condicoes','observacoes'];
+
+        function obterDados() {
+            const d = {};
+            CAMPOS.forEach(id => d[id] = document.getElementById(id).value);
+            d.valorTotal = parseFloat(d.valorTotal) || 0;
+            d.valorEntrada = parseFloat(d.valorEntrada) || 0;
+            d.parcelas = lerParcelas();
+            return d;
+        }
+
+        function formatarMoeda(v) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+        }
+        function formatarData(data) {
+            if (!data) return '';
+            const [a, m, dia] = data.split('-');
+            return `${dia}/${m}/${a}`;
+        }
+
+        // ---------- Conferência ----------
+        function atualizarResumo() {
+            const d = obterDados();
+            const totalParcelas = d.parcelas.reduce((s, p) => s + p.quantidade * p.valor, 0);
+            const somado = d.valorEntrada + totalParcelas;
+            const diff = +(d.valorTotal - somado).toFixed(2);
+            let statusLinha;
+            if (!d.valorTotal) {
+                statusLinha = `<span style="color:#888">informe o valor total para conferir</span>`;
+            } else if (Math.abs(diff) < 0.01) {
+                statusLinha = `<span class="ok">✔ Bate certinho</span>`;
+            } else if (diff > 0) {
+                statusLinha = `<span class="erro">⚠ Faltam ${formatarMoeda(diff)} para fechar o total</span>`;
+            } else {
+                statusLinha = `<span class="erro">⚠ Excede o total em ${formatarMoeda(-diff)}</span>`;
+            }
+            document.getElementById('resumo').innerHTML = `
+                <div class="linha"><span>Entrada</span><span>${formatarMoeda(d.valorEntrada)}</span></div>
+                <div class="linha"><span>Parcelas (${d.parcelas.reduce((s,p)=>s+p.quantidade,0)}x)</span><span>${formatarMoeda(totalParcelas)}</span></div>
+                <div class="linha total"><span>Soma</span><span>${formatarMoeda(somado)}</span></div>
+                <div class="linha total"><span>Valor total do acordo</span><span>${formatarMoeda(d.valorTotal)}</span></div>
+                <div class="linha" style="margin-top:6px">${statusLinha}</div>
+            `;
+        }
+
+        // ---------- Persistência ----------
+        function salvar() {
+            localStorage.setItem('proposta_dados', JSON.stringify(obterDados()));
+        }
+        function carregar() {
+            const raw = localStorage.getItem('proposta_dados');
+            if (raw) {
+                try {
+                    aplicarDados(JSON.parse(raw));
+                    return;
+                } catch (e) {}
+            }
+            adicionarBlocoParcela();
+            atualizarResumo();
+        }
+        function aplicarDados(d) {
+            CAMPOS.forEach(id => { if (d[id] !== undefined && d[id] !== null) document.getElementById(id).value = d[id]; });
+            document.getElementById('parcelasContainer').innerHTML = '';
+            (d.parcelas && d.parcelas.length ? d.parcelas : [{}]).forEach(p => adicionarBlocoParcela(p));
+            atualizarResumo();
+        }
+
+        window.addEventListener('load', () => {
+            carregar();
+            CAMPOS.forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('input', () => { atualizarResumo(); salvar(); });
+            });
+            const savedKey = localStorage.getItem('claude_api_key');
+            if (savedKey) document.getElementById('apiKey').value = savedKey;
+            configurarDropzone();
+        });
+
+        // ---------- Modal IA ----------
+        function abrirModalIA() { document.getElementById('modalIA').classList.add('aberto'); }
+        function fecharModalIA() {
+            document.getElementById('modalIA').classList.remove('aberto');
+            arquivosSelecionados = [];
+            renderListaArquivos();
+            mostrarStatus('', '');
+        }
+
+        function configurarDropzone() {
+            const dz = document.getElementById('dropzone');
+            const input = document.getElementById('fileInput');
+            dz.addEventListener('click', () => input.click());
+            input.addEventListener('change', () => adicionarArquivos(input.files));
+            ['dragover','dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('hover'); }));
+            ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('hover'); }));
+            dz.addEventListener('drop', e => adicionarArquivos(e.dataTransfer.files));
+        }
+        function adicionarArquivos(files) {
+            for (const f of files) arquivosSelecionados.push(f);
+            renderListaArquivos();
+        }
+        function renderListaArquivos() {
+            document.getElementById('listaArquivos').innerHTML =
+                arquivosSelecionados.map((f, i) =>
+                    `<div>📄 ${f.name} <a href="#" onclick="removerArquivo(${i});return false;" style="color:#f5576c">remover</a></div>`
+                ).join('');
+        }
+        function removerArquivo(i) { arquivosSelecionados.splice(i, 1); renderListaArquivos(); }
+
+        function mostrarStatus(tipo, msg) {
+            const el = document.getElementById('statusIA');
+            el.className = 'status-ia' + (tipo ? ' ' + tipo : '');
+            el.textContent = msg;
+        }
+
+        function fileToBase64(file) {
+            return new Promise((res, rej) => {
+                const reader = new FileReader();
+                reader.onload = () => res(reader.result.split(',')[1]);
+                reader.onerror = rej;
+                reader.readAsDataURL(file);
+            });
+        }
+        function fileToText(file) {
+            return new Promise((res, rej) => {
+                const reader = new FileReader();
+                reader.onload = () => res(reader.result);
+                reader.onerror = rej;
+                reader.readAsText(file);
+            });
+        }
+
+        const SCHEMA = {
+            type: "object",
+            properties: {
+                devedor: { type: "string" },
+                docDevedor: { type: "string" },
+                processo: { type: "string" },
+                comarca: { type: "string" },
+                valorTotal: { type: "number" },
+                dataAudiencia: { type: "string" },
+                dataEntrada: { type: "string" },
+                valorEntrada: { type: "number" },
+                parcelas: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            ano: { type: "string" },
+                            quantidade: { type: "integer" },
+                            valor: { type: "number" },
+                            meses: { type: "string" }
+                        },
+                        required: ["ano", "quantidade", "valor", "meses"],
+                        additionalProperties: false
+                    }
+                },
+                condicoes: { type: "string" },
+                observacoes: { type: "string" }
+            },
+            required: ["devedor","docDevedor","processo","comarca","valorTotal",
+                       "dataAudiencia","dataEntrada","valorEntrada","parcelas","condicoes","observacoes"],
+            additionalProperties: false
+        };
+
+        const PROMPT = `Você é assistente de um escritório de advocacia (Rodrigues & Sordi Advogados).
+A partir dos documentos anexados, extraia os dados para montar uma PROPOSTA DE ACORDO de pagamento
+de uma dívida que o cliente (devedor) tem com o credor.
+
+Regras:
+- Valores monetários: número em reais, sem símbolo nem separador de milhar (ex.: 158000.00).
+- Datas: formato AAAA-MM-DD. Se não houver data, deixe string vazia.
+- Se um campo não aparecer nos documentos, devolva string vazia, 0, ou lista vazia conforme o tipo.
+- "parcelas": agrupe por ano/período. Cada bloco tem ano (ex.: "2026"), quantidade (inteiro),
+  valor de cada parcela e meses (ex.: "julho a dezembro").
+- Se os documentos descreverem um plano de pagamento, reproduza-o fielmente.
+  Se só houver o valor total da dívida e nenhum plano, sugira uma estrutura razoável
+  (entrada + parcelas mensais) e descreva isso em "observacoes".
+- "condicoes": condições especiais do acordo, se mencionadas.
+Devolva apenas o JSON no formato solicitado.`;
+
+        async function analisarComIA() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) { mostrarStatus('erro', 'Informe a chave da API.'); return; }
+            if (!arquivosSelecionados.length) { mostrarStatus('erro', 'Anexe ao menos um documento.'); return; }
+
+            localStorage.setItem('claude_api_key', apiKey);
+            const btn = document.getElementById('btnAnalisar');
+            btn.disabled = true;
+            mostrarStatus('carregando', '⏳ Lendo os documentos e montando a proposta...');
+
+            try {
+                const content = [];
+                for (const f of arquivosSelecionados) {
+                    const tipo = (f.type || '').toLowerCase();
+                    if (tipo === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
+                        content.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: await fileToBase64(f) } });
+                    } else if (tipo.startsWith('image/')) {
+                        content.push({ type: "image", source: { type: "base64", media_type: tipo, data: await fileToBase64(f) } });
+                    } else {
+                        const texto = await fileToText(f);
+                        content.push({ type: "text", text: `--- Documento: ${f.name} ---\n${texto}` });
+                    }
+                }
+                content.push({ type: "text", text: PROMPT });
+
+                const resp = await fetch("https://api.anthropic.com/v1/messages", {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                        "x-api-key": apiKey,
+                        "anthropic-version": "2023-06-01",
+                        "anthropic-dangerous-direct-browser-access": "true"
+                    },
+                    body: JSON.stringify({
+                        model: MODEL,
+                        max_tokens: 4096,
+                        output_config: { format: { type: "json_schema", schema: SCHEMA } },
+                        messages: [{ role: "user", content }]
+                    })
+                });
+
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.error?.message || `HTTP ${resp.status}`);
+                }
+                const data = await resp.json();
+                if (data.stop_reason === "refusal") {
+                    throw new Error("A IA recusou processar o conteúdo. Verifique os documentos.");
+                }
+                const textBlock = (data.content || []).find(b => b.type === "text");
+                if (!textBlock) throw new Error("Resposta sem conteúdo de texto.");
+                const extraido = JSON.parse(textBlock.text);
+
+                // mescla com o que já existe (credor permanece)
+                aplicarDados({ credor: document.getElementById('credor').value, ...extraido });
+                salvar();
+                mostrarStatus('sucesso', '✔ Formulário preenchido! Confira os campos e gere o PDF/Word.');
+                setTimeout(fecharModalIA, 1400);
+            } catch (e) {
+                mostrarStatus('erro', '❌ ' + e.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ---------- Exportações ----------
+        function blocoParcelaHTML(p, i) {
+            return `
+                <h4 style="margin:14px 0 8px 0;color:#555;">Parcelas ${p.ano || (i+1)}</h4>
+                <p style="margin:4px 0;"><strong>Período:</strong> ${p.meses || '—'}</p>
+                <p style="margin:4px 0;"><strong>Quantidade:</strong> ${p.quantidade} parcelas</p>
+                <p style="margin:4px 0;"><strong>Valor por parcela:</strong> ${formatarMoeda(p.valor)}</p>
+                <p style="margin:4px 0;"><strong>Total ${p.ano || ''}:</strong> ${formatarMoeda(p.quantidade * p.valor)}</p>`;
+        }
+
+        function gerarPDF() {
+            const d = obterDados();
+            if (!d.dataAudiencia || !d.valorTotal) { alert('Preencha ao menos a Data da Audiência e o Valor Total.'); return; }
+            const totalParcelas = d.parcelas.reduce((s, p) => s + p.quantidade * p.valor, 0);
+            const html = `
+                <div style="font-family: Arial, sans-serif; color:#333; line-height:1.6;">
+                    <div style="text-align:center; margin-bottom:24px; border-bottom:2px solid #667eea; padding-bottom:18px;">
+                        <h1 style="margin:0; color:#667eea;">PROPOSTA DE ACORDO</h1>
+                        <p style="margin:8px 0 0 0; color:#666; font-size:12px;">Audiência de Mediação</p>
+                    </div>
+                    <div style="margin-bottom:22px;">
+                        <h3 style="color:#667eea; border-left:4px solid #667eea; padding-left:10px;">PARTES</h3>
+                        <p><strong>Credor:</strong> ${d.credor || '—'}</p>
+                        <p><strong>Devedor:</strong> ${d.devedor || '—'} ${d.docDevedor ? '— ' + d.docDevedor : ''}</p>
+                        ${d.processo ? `<p><strong>Processo:</strong> ${d.processo}</p>` : ''}
+                        ${d.comarca ? `<p><strong>Juízo:</strong> ${d.comarca}</p>` : ''}
+                    </div>
+                    <div style="margin-bottom:22px;">
+                        <h3 style="color:#667eea; border-left:4px solid #667eea; padding-left:10px;">DADOS DO ACORDO</h3>
+                        <p><strong>Data da Audiência:</strong> ${formatarData(d.dataAudiencia)}</p>
+                        <p><strong>Valor Total:</strong> ${formatarMoeda(d.valorTotal)}</p>
+                    </div>
+                    <div style="margin-bottom:22px;">
+                        <h3 style="color:#667eea; border-left:4px solid #667eea; padding-left:10px;">ESTRUTURA DE PAGAMENTO</h3>
+                        <h4 style="margin:12px 0 8px 0; color:#555;">Entrada</h4>
+                        <p style="margin:4px 0;"><strong>Data:</strong> ${formatarData(d.dataEntrada) || '—'}</p>
+                        <p style="margin:4px 0;"><strong>Valor:</strong> ${formatarMoeda(d.valorEntrada)}</p>
+                        ${d.parcelas.map(blocoParcelaHTML).join('')}
+                        <p style="margin:14px 0 0 0;"><strong>Total em parcelas:</strong> ${formatarMoeda(totalParcelas)}</p>
+                    </div>
+                    ${d.condicoes ? `<div style="margin-bottom:22px;"><h3 style="color:#667eea; border-left:4px solid #667eea; padding-left:10px;">CONDIÇÕES</h3><p style="white-space:pre-wrap;">${d.condicoes}</p></div>` : ''}
+                    ${d.observacoes ? `<div style="margin-bottom:22px;"><h3 style="color:#667eea; border-left:4px solid #667eea; padding-left:10px;">OBSERVAÇÕES</h3><p style="white-space:pre-wrap;">${d.observacoes}</p></div>` : ''}
+                    <div style="margin-top:36px; padding-top:18px; border-top:1px solid #ddd; text-align:center; font-size:11px; color:#999;">
+                        <p>Documento gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
+                </div>`;
+            const element = document.createElement('div');
+            element.innerHTML = html;
+            html2pdf().set({
+                margin: 12,
+                filename: `proposta-acordo-${(d.devedor||'').replace(/\s+/g,'-').toLowerCase() || 'cliente'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            }).from(element).save();
+        }
+
+        function gerarWord() {
+            const d = obterDados();
+            if (!d.dataAudiencia || !d.valorTotal) { alert('Preencha ao menos a Data da Audiência e o Valor Total.'); return; }
+            const { Document, Packer, Paragraph, AlignmentType } = window.docx;
+            const totalParcelas = d.parcelas.reduce((s, p) => s + p.quantidade * p.valor, 0);
+            const P = (text, opts = {}) => new Paragraph({ text, spacing: { after: 60 }, ...opts });
+
+            const children = [
+                new Paragraph({ text: 'PROPOSTA DE ACORDO', alignment: AlignmentType.CENTER, style: 'heading1', spacing: { after: 80 } }),
+                new Paragraph({ text: 'Audiência de Mediação', alignment: AlignmentType.CENTER, spacing: { after: 240 } }),
+
+                new Paragraph({ text: 'PARTES', style: 'heading2', spacing: { before: 160, after: 80 } }),
+                P(`Credor: ${d.credor || '—'}`),
+                P(`Devedor: ${d.devedor || '—'}${d.docDevedor ? ' — ' + d.docDevedor : ''}`),
+                ...(d.processo ? [P(`Processo: ${d.processo}`)] : []),
+                ...(d.comarca ? [P(`Juízo: ${d.comarca}`)] : []),
+
+                new Paragraph({ text: 'DADOS DO ACORDO', style: 'heading2', spacing: { before: 160, after: 80 } }),
+                P(`Data da Audiência: ${formatarData(d.dataAudiencia)}`),
+                P(`Valor Total: ${formatarMoeda(d.valorTotal)}`),
+
+                new Paragraph({ text: 'ESTRUTURA DE PAGAMENTO', style: 'heading2', spacing: { before: 160, after: 80 } }),
+                new Paragraph({ text: 'Entrada', style: 'heading3', spacing: { before: 80, after: 40 } }),
+                P(`Data: ${formatarData(d.dataEntrada) || '—'}`),
+                P(`Valor: ${formatarMoeda(d.valorEntrada)}`)
+            ];
+
+            d.parcelas.forEach(p => {
+                children.push(new Paragraph({ text: `Parcelas ${p.ano || ''}`.trim(), style: 'heading3', spacing: { before: 100, after: 40 } }));
+                children.push(P(`Período: ${p.meses || '—'}`));
+                children.push(P(`Quantidade: ${p.quantidade} parcelas`));
+                children.push(P(`Valor por parcela: ${formatarMoeda(p.valor)}`));
+                children.push(P(`Total ${p.ano || ''}: ${formatarMoeda(p.quantidade * p.valor)}`));
+            });
+            children.push(P(`Total em parcelas: ${formatarMoeda(totalParcelas)}`, { spacing: { before: 120, after: 200 } }));
+
+            if (d.condicoes) {
+                children.push(new Paragraph({ text: 'CONDIÇÕES', style: 'heading2', spacing: { before: 160, after: 80 } }));
+                children.push(P(d.condicoes));
+            }
+            if (d.observacoes) {
+                children.push(new Paragraph({ text: 'OBSERVAÇÕES', style: 'heading2', spacing: { before: 160, after: 80 } }));
+                children.push(P(d.observacoes));
+            }
+            children.push(new Paragraph({ text: `Documento gerado em ${new Date().toLocaleDateString('pt-BR')}`, alignment: AlignmentType.CENTER, spacing: { before: 300 } }));
+
+            const doc = new Document({ sections: [{ children }] });
+            Packer.toBlob(doc).then(blob => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `proposta-acordo-${(d.devedor||'').replace(/\s+/g,'-').toLowerCase() || 'cliente'}.docx`;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function limparFormulario() {
+            if (confirm('Limpar todos os dados? Esta ação não pode ser desfeita.')) {
+                localStorage.removeItem('proposta_dados');
+                document.getElementById('acordoForm').reset();
+                document.getElementById('parcelasContainer').innerHTML = '';
+                adicionarBlocoParcela();
+                document.getElementById('credor').value = 'Rodrigues & Sordi Advogados';
+                atualizarResumo();
+            }
+        }
+    </script>
+</body>
+</html>
