@@ -8,7 +8,6 @@
  * aceite rastreável.
  */
 
-import { randomUUID } from "node:crypto";
 import { formatarBRL, type Centavos } from "../domain/money";
 import { precoOAB } from "../domain/pricing";
 import { calcularExito, reconciliarValorMinimo, type PoloProcessual } from "../domain/proposal";
@@ -99,10 +98,17 @@ export interface GerarPropostaOpts {
   gerarToken?: () => string;
 }
 
+/** Gerador de token isomórfico (browser e Node 19+). */
+function tokenPadrao(): string {
+  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return `tok_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+}
+
 /** Monta a proposta completa (texto + precificação + token de aceite). */
 export function gerarProposta(input: PropostaInput, opts: GerarPropostaOpts = {}): PropostaGerada {
   const precificacao = precificarProposta(input);
-  const tokenAceite = (opts.gerarToken ?? randomUUID)();
+  const tokenAceite = (opts.gerarToken ?? tokenPadrao)();
   const assunto = `Proposta de honorários — ${input.clienteNome} — ${input.demanda}`;
   const corpoMarkdown = montarCorpoMarkdown(input, precificacao);
   return { assunto, corpoMarkdown, precificacao, tokenAceite };

@@ -85,16 +85,21 @@ export const statusContratoEnum = pgEnum("status_contrato", [
   "encerrado",
 ]);
 
+/** Papéis de acesso (RBAC). Sócio = total; Assistente = só lançar/preencher. */
+export const roleUsuarioEnum = pgEnum("role_usuario", ["socio", "assistente"]);
+
 // ---------------------------------------------------------------------------
 // Usuários (auth) — minimal; integra com Supabase Auth depois
 // ---------------------------------------------------------------------------
 
 export const usuarios = pgTable("usuarios", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  /** Igual ao id do usuário no Supabase Auth (auth.users.id). */
+  id: uuid("id").primaryKey(),
   email: varchar("email", { length: 320 }).notNull().unique(),
   nome: text("nome"),
   oab: varchar("oab", { length: 32 }),
-  role: varchar("role", { length: 32 }).notNull().default("advogado"),
+  role: roleUsuarioEnum("role").notNull().default("assistente"),
+  ativo: boolean("ativo").notNull().default(true),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
