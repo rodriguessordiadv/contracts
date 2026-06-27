@@ -14,3 +14,8 @@ export * from "./integrations/anthropic";
 export * from "./onboarding/contractExtraction";
 export * from "./voice/voiceExtraction";
 export * from "./voice/clientMatch";
+
+// Anamnese, OAB/RS e propostas
+export * from "./data/tabelaOabRs";
+export * from "./anamnese/anamnese";
+export * from "./proposal/proposta";
