@@ -131,7 +131,7 @@ function AbaVoz({ onRascunho }: { onRascunho: (r: Rascunho) => void }) {
               </Badge>
             )}
           </div>
-          <FormRascunho rascunho={rascunho} setRascunho={setRascunho} onConfirmar={onRascunho} />
+          <FormRascunho value={rascunho} onChange={setRascunho} onConfirmar={onRascunho} aoFechar={() => setRascunho(null)} />
         </div>
       )}
     </Card>
@@ -192,7 +192,7 @@ function AbaTimer({ onRascunho }: { onRascunho: (r: Rascunho) => void }) {
       </div>
       {rascunho && (
         <div className="border-t border-slate-100 pt-5">
-          <FormRascunho rascunho={rascunho} setRascunho={setRascunho} onConfirmar={onRascunho} />
+          <FormRascunho value={rascunho} onChange={setRascunho} onConfirmar={onRascunho} aoFechar={() => setRascunho(null)} />
         </div>
       )}
     </Card>
@@ -209,24 +209,26 @@ function AbaManual({ onRascunho }: { onRascunho: (r: Rascunho) => void }) {
   });
   return (
     <Card title="Lançamento manual">
-      <FormRascunho rascunho={rascunho} setRascunho={setRascunho} onConfirmar={onRascunho} resetApos />
+      <FormRascunho value={rascunho} onChange={setRascunho} onConfirmar={onRascunho} resetApos />
     </Card>
   );
 }
 
 function FormRascunho({
-  rascunho,
-  setRascunho,
+  value,
+  onChange,
   onConfirmar,
   resetApos,
+  aoFechar,
 }: {
-  rascunho: Rascunho;
-  setRascunho: (r: Rascunho | null) => void;
+  value: Rascunho;
+  onChange: (r: Rascunho) => void;
   onConfirmar: (r: Rascunho) => void;
   resetApos?: boolean;
+  aoFechar?: () => void;
 }) {
-  const r = rascunho;
-  const set = (patch: Partial<Rascunho>) => setRascunho({ ...r, ...patch });
+  const r = value;
+  const set = (patch: Partial<Rascunho>) => onChange({ ...r, ...patch });
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -283,8 +285,8 @@ function FormRascunho({
           onClick={() => {
             if (!r.titulo.trim()) return;
             onConfirmar(r);
-            if (resetApos) setRascunho({ ...r, titulo: "", horas: 1, area: "" });
-            else setRascunho(null);
+            if (resetApos) onChange({ ...r, titulo: "", horas: 1, area: "" });
+            else aoFechar?.();
           }}
           disabled={!r.titulo.trim()}
           className="w-full rounded-lg bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 hover:bg-gold-400 disabled:opacity-40"
