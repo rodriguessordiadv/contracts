@@ -13,10 +13,13 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.106.0",
     "drizzle-orm": "^0.44.5",
-    "postgres": "^3.4.5"
+    "postgres": "^3.4.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/node": "^26.0.1",
     "drizzle-kit": "^0.31.4",
     "typescript": "^5.9.3",
     "vitest": "^2.1.4"
