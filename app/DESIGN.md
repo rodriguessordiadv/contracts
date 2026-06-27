@@ -50,12 +50,16 @@ O contrato padrão do escritório define o modelo de dados inteiro:
 
 ## Status de construção
 
-- [x] Núcleo de domínio + testes (esta entrega) — **não depende de credenciais**
-- [ ] Schema Postgres/Drizzle (Supabase)
-- [ ] Extração de contrato com Claude
-- [ ] Voz + timer + fila de revisão
-- [ ] Anamnese + e-mail-proposta + aceite
-- [ ] ASAAS + painel
+- [x] Núcleo de domínio + testes — **não depende de credenciais**
+- [x] Schema Postgres/Drizzle (Supabase) — 12 tabelas + migration
+- [x] Extração de contrato com Claude (Sonnet) — testada contra o CNTR000262
+- [x] Voz (Haiku) + casamento de cliente + fila de revisão (lógica)
+- [x] Anamnese + Tabela OAB/RS + e-mail-proposta + aceite (motor)
+- [x] Cliente ASAAS (REST) — código + testes mockados
+- [ ] **Frontend (React)**: dashboard, lançamento por voz, timer nativo, telas de
+      cliente/proposta, painel de controle austero
+- [ ] **Deploy real**: projeto Supabase, Vercel, `ANTHROPIC_API_KEY`, egress ASAAS
+- [ ] Envio de e-mail (Gmail/SMTP) + página web de aceite
 
-> Valores numéricos da Tabela OAB/RS entram após a pesquisa em curso. Onde houver
-> número provisório, está marcado com `TODO(pesquisa-oab-rs)`.
+> A Tabela de Honorários da OAB/RS (base 2012, indicativo) está em
+> `src/data/tabelaOabRs.ts`; `corrigirValor()` aplica o reajuste acumulado.
